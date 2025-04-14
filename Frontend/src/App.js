@@ -1,60 +1,82 @@
-// frontend/src/App.jsx
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
+import { Loader2, Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 function App() {
-  const [nombre, setNombre] = useState('');
-  const [codigo, setCodigo] = useState('');
+  const [cedula, setCedula] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [resultado, setResultado] = useState(null);
-  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
   const buscar = async () => {
-    setError('');
     setResultado(null);
+    setError("");
+    setCargando(true);
+
     try {
-      const res = await axios.post('http://localhost:5000/buscar', {
-        nombre,
+      const res = await axios.post("http://localhost:5000/buscar", {
+        cedula,
         codigo,
       });
-      setResultado(res.data);
+      if (res.data) {
+        setResultado(res.data);
+      } else {
+        setError("No se encontraron resultados.");
+      }
     } catch (err) {
-      setError('No se encontró el usuario.');
+      setError("Hubo un error al buscar.");
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Buscar Aplicativos</h1>
-        <input
-          className="w-full mb-2 p-2 border rounded"
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <input
-          className="w-full mb-4 p-2 border rounded"
-          placeholder="Código"
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value)}
-        />
-        <button
-          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700"
-          onClick={buscar}
-        >
-          Buscar
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-6">
+      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-xl space-y-6">
+        <h1 className="text-3xl font-bold text-center text-blue-800">🔍 Buscar Aplicativos</h1>
+        <p className="text-center text-gray-500">Ingresa cédula y/o código para buscar</p>
 
-        {error && <p className="mt-4 text-red-500">{error}</p>}
+        <div className="space-y-4">
+          <input
+            type="text"
+            className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Cédula"
+            value={cedula}
+            onChange={(e) => setCedula(e.target.value)}
+          />
+          <input
+            type="text"
+            className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Código"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+          />
+          <button
+            onClick={buscar}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl flex justify-center items-center gap-2"
+            disabled={cargando}
+          >
+            {cargando ? <Loader2 className="animate-spin" /> : <Search />}
+            {cargando ? "Buscando..." : "Buscar"}
+          </button>
+        </div>
+
+        {error && <p className="text-red-500 text-center">{error}</p>}
 
         {resultado && (
-          <div className="mt-4">
-            <h2 className="font-semibold">Resultados:</h2>
-            <p><strong>Nombre:</strong> {resultado.nombre}</p>
-            <p><strong>Cédula:</strong> {resultado.cedula}</p>
-            <p><strong>Código:</strong> {resultado.codigo}</p>
-            <p><strong>Aplicativos:</strong> {resultado.aplicativos.join(", ")}</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow"
+          >
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">📋 Resultado</h2>
+            <p><strong>👤 Nombre:</strong> {resultado.nombre}</p>
+            <p><strong>🪪 Cédula:</strong> {resultado.cedula}</p>
+            <p><strong>🆔 Código:</strong> {resultado.codigo}</p>
+            <p><strong>📲 Aplicativos:</strong> {resultado.aplicativos.join(", ")}</p>
+          </motion.div>
         )}
       </div>
     </div>
