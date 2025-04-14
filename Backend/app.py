@@ -57,3 +57,6 @@ def buscar():
         return jsonify({"error": "No se encontró la persona"}), 404
 
     return jsonify(resultado)
+
+if __name__ == "__main__":
+    app.run(debug=True)
